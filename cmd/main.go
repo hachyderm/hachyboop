@@ -72,6 +72,13 @@ A longer sentence, about how exactly to use this program`,
 
 			//
 			hachyboopInstance := service.NewHachyboop()
+
+			// TODO from config
+			hachyboopInstance.Resolvers = []string{
+				"kiki.bunny.net:53",
+				"8.8.8.8:53",
+			}
+
 			return hachyboopInstance.Run()
 			//
 
