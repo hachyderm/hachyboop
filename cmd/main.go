@@ -75,7 +75,7 @@ A longer sentence, about how exactly to use this program`,
 
 			// TODO from config
 			hachyboopInstance.Resolvers = []string{
-				"kiki.bunny.net:53",
+				"91.200.176.1:53", // kiki.bunny.net
 				"8.8.8.8:53",
 			}
 
