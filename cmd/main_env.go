@@ -65,6 +65,12 @@ var (
 			Destination: &cfg.ObservationRegion,
 			Required:    false,
 		},
+		{
+			Name:        "HACHYBOOP_QUERY_TARGETS",
+			Value:       "hachyderm.io",
+			Destination: &cfg.QueryTargetsRaw,
+			Required:    false,
+		},
 	}
 )
 

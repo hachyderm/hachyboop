@@ -34,6 +34,7 @@ type HachyboopOptions struct {
 	FileOutput        *FileOptions
 	ObserverId        string
 	ObservationRegion string
+	QueryTargetsRaw   string // raw input from env/args
 }
 
 // Configuration options for our S3 file output.
