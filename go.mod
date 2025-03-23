@@ -1,9 +1,8 @@
-module github.com/kris-nova/nova
+module github.com/hachyderm/hachyboop
 
 go 1.18
 
 require (
-	github.com/kris-nova/go-nova v0.0.0-20220421215251-a2e7dcdd690b
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli/v2 v2.4.1
 )
