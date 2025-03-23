@@ -17,12 +17,12 @@
 all: compile
 
 version     ?=  0.0.1
-target      ?=  nova
-org         ?=  kris-nova
-authorname  ?=  Kris Nóva
-authoremail ?=  kris@nivenly.com
-license     ?=  MIT
-year        ?=  2022
+target      ?=  hachyboop
+org         ?=  hachyderm
+authorname  ?=  Hachyderm Infrastructure Team
+authoremail ?=  hachyderm@hachyderm.io
+license     ?=  Apache 2.0
+year        ?=  2025
 copyright   ?=  Copyright (c) $(year)
 
 compile: ## Compile for the local architecture ⚙
@@ -47,6 +47,7 @@ test: clean compile install ## 🤓 Run go tests
 clean: ## Clean your artifacts 🧼
 	@echo "Cleaning..."
 	rm -rvf release/*
+	rm -rvf ./hachyboop
 
 .PHONY: release
 release: ## Make the binaries for a GitHub release 📦
