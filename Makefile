@@ -14,6 +14,7 @@
 #                                                                             #
 # =========================================================================== #
 
+.PHONY: all
 all: compile
 
 version     ?=  0.0.1
@@ -25,6 +26,7 @@ license     ?=  Apache 2.0
 year        ?=  2025
 copyright   ?=  Copyright (c) $(year)
 
+.PHONY: compile
 compile: ## Compile for the local architecture ⚙
 	@echo "Compiling..."
 	go build -ldflags "\
@@ -36,14 +38,17 @@ compile: ## Compile for the local architecture ⚙
 	-X 'github.com/$(org)/$(target).Name=$(target)'" \
 	-o $(target) cmd/*.go
 
+.PHONY: install
 install: ## Install the program to /usr/bin 🎉
 	@echo "Installing..."
 	sudo cp $(target) /usr/bin/$(target)
 
+.PHONY: test
 test: clean compile install ## 🤓 Run go tests
 	@echo "Testing..."
 	go test -v ./...
 
+.PHONY: clean
 clean: ## Clean your artifacts 🧼
 	@echo "Cleaning..."
 	rm -rvf release/*

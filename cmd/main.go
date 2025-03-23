@@ -1,6 +1,6 @@
 /*===========================================================================*\
  *           MIT License Copyright (c) 2022 Kris Nóva <kris@nivenly.com>     *
- *                                                                           *
+ * *
  *                ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                *
  *                ┃   ███╗   ██╗ ██████╗ ██╗   ██╗ █████╗   ┃                *
  *                ┃   ████╗  ██║██╔═████╗██║   ██║██╔══██╗  ┃                *
@@ -9,9 +9,9 @@
  *                ┃   ██║ ╚████║╚██████╔╝ ╚████╔╝ ██║  ██║  ┃                *
  *                ┃   ╚═╝  ╚═══╝ ╚═════╝   ╚═══╝  ╚═╝  ╚═╝  ┃                *
  *                ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛                *
- *                                                                           *
+ * *
  *                       This machine kills fascists.                        *
- *                                                                           *
+ * *
 \*===========================================================================*/
 
 package main
@@ -19,12 +19,22 @@ package main
 import (
 	"context"
 	"os"
+	"strings"
 
 	hb "github.com/hachyderm/hachyboop"
 	"github.com/hachyderm/hachyboop/internal/service"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v3"
 )
+
+var banner = `
+██╗  ██╗ █████╗  ██████╗██╗  ██╗██╗   ██╗██████╗  ██████╗  ██████╗ ██████╗ 
+██║  ██║██╔══██╗██╔════╝██║  ██║╚██╗ ██╔╝██╔══██╗██╔═══██╗██╔═══██╗██╔══██╗
+███████║███████║██║     ███████║ ╚████╔╝ ██████╔╝██║   ██║██║   ██║██████╔╝
+██╔══██║██╔══██║██║     ██╔══██║  ╚██╔╝  ██╔══██╗██║   ██║██║   ██║██╔═══╝ 
+██║  ██║██║  ██║╚██████╗██║  ██║   ██║   ██████╔╝╚██████╔╝╚██████╔╝██║     
+╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝ 
+`
 
 var cfg = &AppOptions{}
 
@@ -61,14 +71,29 @@ A longer sentence, about how exactly to use this program`,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 
 			//
-			hachyboopObject := service.NewHachyboop()
-			return hachyboopObject.Run()
+			hachyboopInstance := service.NewHachyboop()
+
+			// TODO from config
+			hachyboopInstance.Resolvers = []string{
+				"kiki.bunny.net:53",
+				"8.8.8.8:53",
+			}
+
+			return hachyboopInstance.Run()
 			//
 
 		},
 	}
 
 	var err error
+
+	logrus.Info("==========================================================================")
+	for _, line := range strings.Split(banner, "\n") {
+		logrus.Info(line)
+	}
+	logrus.Info("==========================================================================")
+
+	logrus.Debugf("Parsing config")
 
 	// Load environment variables
 	err = Environment()
@@ -79,6 +104,8 @@ A longer sentence, about how exactly to use this program`,
 
 	// Arbitrary (non-error) pre load
 	Preloader()
+
+	logrus.Debugf("Entering main app loop")
 
 	// Runtime
 	err = app.Run(context.Background(), os.Args)
@@ -93,8 +120,8 @@ A longer sentence, about how exactly to use this program`,
 func Preloader() {
 	/* Flag parsing */
 	if cfg.verbose {
-		logrus.SetLevel(logrus.DebugLevel)
+		logrus.SetLevel(logrus.TraceLevel)
 	} else {
-		logrus.SetLevel(logrus.InfoLevel)
+		logrus.SetLevel(logrus.DebugLevel)
 	}
 }

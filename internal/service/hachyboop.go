@@ -17,8 +17,11 @@
 package service
 
 import (
+	"context"
+	"strings"
 	"time"
 
+	"github.com/hachyderm/hachyboop/internal/dns"
 	"github.com/hachyderm/hachyboop/pkg/api"
 	"github.com/sirupsen/logrus"
 )
@@ -28,6 +31,7 @@ var _ api.Runner = &Hachyboop{}
 
 type Hachyboop struct {
 	// Fields
+	Resolvers []string
 }
 
 func NewHachyboop() *Hachyboop {
@@ -39,13 +43,53 @@ var (
 )
 
 func (n *Hachyboop) Run() error {
-	client := api.Client{}
-	server := api.Server{}
-	logrus.Infof("Client: %x", client)
-	logrus.Infof("Server: %x", server)
+
+	var resolvers []*dns.TargetedResolver
+	for _, resolverSpec := range n.Resolvers {
+		parts := strings.Split(resolverSpec, ":")
+
+		if len(parts) != 2 {
+			logrus.WithField("resolverSpec", resolverSpec).Warn("Resolver must be provided as host:port, this resolver didn't fit that. Ignorning.")
+			continue
+		}
+
+		host := parts[0]
+		port := parts[1]
+
+		// TODO take timeout via config
+		resolver := dns.NewTargetedResolver(host, port, 5)
+
+		resolvers = append(resolvers, resolver)
+	}
+
 	for runtimeHachyboop {
-		time.Sleep(1 * time.Second)
-		logrus.Infof("Sleeping...\n")
+		// TODO extract this out
+
+		for _, resolver := range resolvers {
+			// TODO extract this out
+
+			// TODO from config
+			lookupHost := "hachyderm.io"
+
+			// TODO impl record type (or get rid of it)
+			response, err := resolver.Lookup(context.Background(), lookupHost, "A")
+
+			logFields := logrus.Fields{
+				"host":       response.Host,
+				"response":   response.Values,
+				"resolvedBy": response.ResolvedBy.Host,
+			}
+
+			if err != nil {
+				logFields["error"] = err.Error()
+				logrus.WithFields(logFields).Warnf("DNS lookup failed")
+			} else {
+				logrus.WithFields(logFields).Infof("DNS lookup completed")
+			}
+		}
+
+		// TODO from config
+		time.Sleep(30 * time.Second)
 	}
 	return nil
 }
