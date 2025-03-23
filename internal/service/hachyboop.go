@@ -27,9 +27,10 @@ import (
 )
 
 type HachyboopOptions struct {
-	Verbose   bool
-	Resolvers []string
-	S3Output  *S3Options
+	Verbose    bool
+	Resolvers  []string
+	S3Output   *S3Options
+	FileOutput *FileOptions
 }
 
 type S3Options struct {
@@ -39,8 +40,16 @@ type S3Options struct {
 	Secret    string
 }
 
+type FileOptions struct {
+	Path string
+}
+
 func (s *S3Options) Enabled() bool {
 	return s.Host != ""
+}
+
+func (f *FileOptions) Enabled() bool {
+	return f.Path != ""
 }
 
 // Compile check *Nova implements Runner interface
@@ -115,4 +124,15 @@ func queryResolvers(resolvers []*dns.TargetedResolver) {
 			logrus.WithFields(logFields).Infof("DNS lookup completed")
 		}
 	}
+}
+
+type HachyboopDnsObservation struct {
+	ObservedOn              time.Time
+	ObservedOnUnixTimestamp int64    `parquet:"name=observedonunixtimestamp, type=INT64, convertedtype=TIMESTAMP_MILLIS"`
+	Host                    string   `parquet:"name=host, type=BYTE_ARRAY"`
+	RecordType              string   `parquet:"name=recordtype, type=BYTE_ARRAY"`
+	Values                  []string `parquet:"name=values, type=MAP, convertedtype=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
+	Error                   string   `parquet:"name=error, type=BYTE_ARRAY"`
+	ResovledByHost          string   `parquet:"name=resolvedby, type=BYTE_ARRAY"`
+	ResolvedBy              *dns.TargetedResolver
 }

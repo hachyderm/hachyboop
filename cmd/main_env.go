@@ -47,6 +47,12 @@ var (
 			Destination: &cfg.S3Output.Secret,
 			Required:    false,
 		},
+		{
+			Name:        "HACHYBOOP_RESULTS_PATH",
+			Value:       "data",
+			Destination: &cfg.FileOutput.Path,
+			Required:    false,
+		},
 	}
 )
 

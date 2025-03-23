@@ -37,7 +37,8 @@ var banner = `
 `
 
 var cfg = &service.HachyboopOptions{
-	S3Output: &service.S3Options{},
+	S3Output:   &service.S3Options{},
+	FileOutput: &service.FileOptions{},
 }
 
 func main() {
