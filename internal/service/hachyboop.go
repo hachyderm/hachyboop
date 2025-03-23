@@ -48,7 +48,7 @@ var _ api.Runner = &Hachyboop{}
 
 type Hachyboop struct {
 	// Fields
-	Config *HachyboopOptions
+	Options *HachyboopOptions
 }
 
 func NewHachyboop() *Hachyboop {
@@ -56,12 +56,24 @@ func NewHachyboop() *Hachyboop {
 }
 
 var (
-	runtimeHachyboop bool = true
+	Enabled bool = true
 )
 
-func (n *Hachyboop) Run() error {
+func (hb *Hachyboop) Run() error {
+	resolvers := hb.parseResolvers()
+
+	for Enabled {
+		queryResolvers(resolvers)
+
+		// TODO from config
+		time.Sleep(30 * time.Second)
+	}
+	return nil
+}
+
+func (hb *Hachyboop) parseResolvers() []*dns.TargetedResolver {
 	var resolvers []*dns.TargetedResolver
-	for _, resolverSpec := range n.Config.Resolvers {
+	for _, resolverSpec := range hb.Options.Resolvers {
 		parts := strings.Split(resolverSpec, ":")
 
 		if len(parts) != 2 {
@@ -77,35 +89,30 @@ func (n *Hachyboop) Run() error {
 
 		resolvers = append(resolvers, resolver)
 	}
+	return resolvers
+}
 
-	for runtimeHachyboop {
+func queryResolvers(resolvers []*dns.TargetedResolver) {
+	for _, resolver := range resolvers {
 		// TODO extract this out
 
-		for _, resolver := range resolvers {
-			// TODO extract this out
+		// TODO from config
+		lookupHost := "hachyderm.io"
 
-			// TODO from config
-			lookupHost := "hachyderm.io"
+		// TODO impl record type (or get rid of it)
+		response, err := resolver.Lookup(context.Background(), lookupHost, "A")
 
-			// TODO impl record type (or get rid of it)
-			response, err := resolver.Lookup(context.Background(), lookupHost, "A")
-
-			logFields := logrus.Fields{
-				"host":       response.Host,
-				"response":   response.Values,
-				"resolvedBy": response.ResolvedBy.Host,
-			}
-
-			if err != nil {
-				logFields["error"] = err.Error()
-				logrus.WithFields(logFields).Warnf("DNS lookup failed")
-			} else {
-				logrus.WithFields(logFields).Infof("DNS lookup completed")
-			}
+		logFields := logrus.Fields{
+			"host":       response.Host,
+			"response":   response.Values,
+			"resolvedBy": response.ResolvedBy.Host,
 		}
 
-		// TODO from config
-		time.Sleep(30 * time.Second)
+		if err != nil {
+			logFields["error"] = err.Error()
+			logrus.WithFields(logFields).Warnf("DNS lookup failed")
+		} else {
+			logrus.WithFields(logFields).Infof("DNS lookup completed")
+		}
 	}
-	return nil
 }

@@ -68,7 +68,7 @@ A longer sentence, about how exactly to use this program`,
 		HideVersion: false,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			hachyboopInstance := service.NewHachyboop()
-			hachyboopInstance.Config = cfg
+			hachyboopInstance.Options = cfg
 
 			// TODO from config
 			cfg.Resolvers = []string{
