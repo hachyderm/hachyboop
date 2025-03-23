@@ -14,6 +14,7 @@ type TargetedResolver struct {
 }
 
 type DnsResponse struct {
+	ObservedOn time.Time
 	Host       string
 	RecordType string
 	Values     []string
@@ -53,5 +54,6 @@ func (tr *TargetedResolver) Lookup(ctx context.Context, host, recordType string)
 		Values:     responses,
 		Error:      errorText,
 		ResolvedBy: tr,
+		ObservedOn: time.Now().UTC(),
 	}, err
 }
