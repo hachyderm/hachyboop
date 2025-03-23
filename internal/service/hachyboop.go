@@ -14,69 +14,38 @@
  *                                                                           *
 \*===========================================================================*/
 
-package main
+package service
 
 import (
-	"fmt"
-	"os"
+	"time"
+
+	"github.com/hachyderm/hachyboop/pkg/api"
+	"github.com/sirupsen/logrus"
 )
 
-var env = &EnvironmentOptions{}
+// Compile check *Nova implements Runner interface
+var _ api.Runner = &Hachyboop{}
 
-type EnvironmentOptions struct {
+type Hachyboop struct {
+	// Fields
+}
 
-	// example fields
-	s3Host      string
-	s3Path      string
-	s3AccessKey string
-	s3Secret    string
+func NewHachyboop() *Hachyboop {
+	return &Hachyboop{}
 }
 
 var (
-	envOpt   = &EnvironmentOptions{}
-	registry = []*EnvironmentVariable{
-		{
-			Name:        "HACHYBOOP_S3_HOST",
-			Value:       "",
-			Destination: &envOpt.s3Host,
-			Required:    false,
-		},
-		{
-			Name:        "HACHYBOOP_S3_PATH",
-			Value:       "",
-			Destination: &envOpt.s3Path,
-			Required:    false,
-		},
-		{
-			Name:        "HACHYBOOP_S3_ACCESS_KEY",
-			Value:       "",
-			Destination: &envOpt.s3AccessKey,
-			Required:    false,
-		},
-		{
-			Name:        "HACHYBOOP_S3_SECRET",
-			Value:       "",
-			Destination: &envOpt.s3Secret,
-			Required:    false,
-		},
-	}
+	runtimeHachyboop bool = true
 )
 
-type EnvironmentVariable struct {
-	Name        string
-	Value       string
-	Destination *string
-	Required    bool
-}
-
-func Environment() error {
-	for _, v := range registry {
-		v.Value = os.Getenv(v.Name)
-		if v.Required && v.Value == "" {
-			// If required and the variable is empty
-			return fmt.Errorf("empty or undefined environmental variable [%s]", v.Name)
-		}
-		*v.Destination = v.Value
+func (n *Hachyboop) Run() error {
+	client := api.Client{}
+	server := api.Server{}
+	logrus.Infof("Client: %x", client)
+	logrus.Infof("Server: %x", server)
+	for runtimeHachyboop {
+		time.Sleep(1 * time.Second)
+		logrus.Infof("Sleeping...\n")
 	}
 	return nil
 }

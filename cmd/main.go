@@ -17,13 +17,13 @@
 package main
 
 import (
+	"context"
 	"os"
-	"time"
 
-	nova "github.com/hachyderm/hachyboop"
+	hb "github.com/hachyderm/hachyboop"
 	"github.com/hachyderm/hachyboop/internal/service"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var cfg = &AppOptions{}
@@ -39,18 +39,10 @@ func main() {
 		Aliases: []string{"V"},
 		Usage:   "The version of the program.",
 	}
-	app := &cli.App{
-		Name:     nova.Name,
-		Version:  nova.Version,
-		Compiled: time.Now(),
-		Authors: []*cli.Author{
-			&cli.Author{
-				Name:  nova.AuthorName,
-				Email: nova.AuthorEmail,
-			},
-		},
-		Copyright: nova.Copyright,
-		HelpName:  nova.Copyright,
+	app := &cli.Command{
+		Name:      hb.Name,
+		Version:   hb.Version,
+		Copyright: hb.Copyright,
 		Usage:     "A go program.",
 		UsageText: `service <options> <flags> 
 A longer sentence, about how exactly to use this program`,
@@ -64,14 +56,13 @@ A longer sentence, about how exactly to use this program`,
 				Destination: &cfg.verbose,
 			},
 		},
-		EnableBashCompletion: true,
-		HideHelp:             false,
-		HideVersion:          false,
-		Action: func(c *cli.Context) error {
+		HideHelp:    false,
+		HideVersion: false,
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 
 			//
-			novaObject := service.NewNova()
-			return novaObject.Run()
+			hachyboopObject := service.NewHachyboop()
+			return hachyboopObject.Run()
 			//
 
 		},
@@ -90,7 +81,7 @@ A longer sentence, about how exactly to use this program`,
 	Preloader()
 
 	// Runtime
-	err = app.Run(os.Args)
+	err = app.Run(context.Background(), os.Args)
 	if err != nil {
 		logrus.Error(err)
 		os.Exit(-1)
@@ -102,8 +93,8 @@ A longer sentence, about how exactly to use this program`,
 func Preloader() {
 	/* Flag parsing */
 	if cfg.verbose {
-		logrus.SetLevel(logrus.InfoLevel)
+		logrus.SetLevel(logrus.DebugLevel)
 	} else {
-		logrus.SetLevel(logrus.WarnLevel)
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 }
