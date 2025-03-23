@@ -26,12 +26,29 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type HachyboopOptions struct {
+	Verbose   bool
+	Resolvers []string
+	S3Output  *S3Options
+}
+
+type S3Options struct {
+	Host      string
+	Path      string
+	AccessKey string
+	Secret    string
+}
+
+func (s *S3Options) Enabled() bool {
+	return s.Host != ""
+}
+
 // Compile check *Nova implements Runner interface
 var _ api.Runner = &Hachyboop{}
 
 type Hachyboop struct {
 	// Fields
-	Resolvers []string
+	Config *HachyboopOptions
 }
 
 func NewHachyboop() *Hachyboop {
@@ -43,9 +60,8 @@ var (
 )
 
 func (n *Hachyboop) Run() error {
-
 	var resolvers []*dns.TargetedResolver
-	for _, resolverSpec := range n.Resolvers {
+	for _, resolverSpec := range n.Config.Resolvers {
 		parts := strings.Split(resolverSpec, ":")
 
 		if len(parts) != 2 {

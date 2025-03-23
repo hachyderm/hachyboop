@@ -15,6 +15,7 @@ type TargetedResolver struct {
 
 type DnsResponse struct {
 	ObservedOn time.Time
+	ObservedBy string
 	Host       string
 	RecordType string
 	Values     []string

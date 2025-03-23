@@ -36,10 +36,8 @@ var banner = `
 ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝ 
 `
 
-var cfg = &AppOptions{}
-
-type AppOptions struct {
-	verbose bool
+var cfg = &service.HachyboopOptions{
+	S3Output: &service.S3Options{},
 }
 
 func main() {
@@ -63,25 +61,22 @@ A longer sentence, about how exactly to use this program`,
 			&cli.BoolFlag{
 				Name:        "verbose",
 				Aliases:     []string{"v"},
-				Destination: &cfg.verbose,
+				Destination: &cfg.Verbose,
 			},
 		},
 		HideHelp:    false,
 		HideVersion: false,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-
-			//
 			hachyboopInstance := service.NewHachyboop()
+			hachyboopInstance.Config = cfg
 
 			// TODO from config
-			hachyboopInstance.Resolvers = []string{
+			cfg.Resolvers = []string{
 				"91.200.176.1:53", // kiki.bunny.net
 				"8.8.8.8:53",
 			}
 
 			return hachyboopInstance.Run()
-			//
-
 		},
 	}
 
@@ -103,7 +98,7 @@ A longer sentence, about how exactly to use this program`,
 	}
 
 	// Arbitrary (non-error) pre load
-	Preloader()
+	BeforeAppRun()
 
 	logrus.Debugf("Entering main app loop")
 
@@ -111,17 +106,23 @@ A longer sentence, about how exactly to use this program`,
 	err = app.Run(context.Background(), os.Args)
 	if err != nil {
 		logrus.Error(err)
-		os.Exit(-1)
+		os.Exit(1)
 	}
+
+	AfterAppRun()
 }
 
-// Preloader will run for ALL commands, and is used
+// BeforeAppRun will run for ALL commands, and is used
 // to initalize the runtime environments of the program.
-func Preloader() {
+func BeforeAppRun() {
 	/* Flag parsing */
-	if cfg.verbose {
+	if cfg.Verbose {
 		logrus.SetLevel(logrus.TraceLevel)
 	} else {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
+}
+
+func AfterAppRun() {
+
 }

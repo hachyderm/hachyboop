@@ -21,42 +21,30 @@ import (
 	"os"
 )
 
-var env = &EnvironmentOptions{}
-
-type EnvironmentOptions struct {
-
-	// example fields
-	s3Host      string
-	s3Path      string
-	s3AccessKey string
-	s3Secret    string
-}
-
 var (
-	envOpt   = &EnvironmentOptions{}
 	registry = []*EnvironmentVariable{
 		{
 			Name:        "HACHYBOOP_S3_HOST",
 			Value:       "",
-			Destination: &envOpt.s3Host,
+			Destination: &cfg.S3Output.Host,
 			Required:    false,
 		},
 		{
 			Name:        "HACHYBOOP_S3_PATH",
 			Value:       "",
-			Destination: &envOpt.s3Path,
+			Destination: &cfg.S3Output.Path,
 			Required:    false,
 		},
 		{
-			Name:        "HACHYBOOP_S3_ACCESS_KEY",
+			Name:        "HACHYBOOP_S3_ACCESS_KEY_ID",
 			Value:       "",
-			Destination: &envOpt.s3AccessKey,
+			Destination: &cfg.S3Output.AccessKey,
 			Required:    false,
 		},
 		{
-			Name:        "HACHYBOOP_S3_SECRET",
+			Name:        "HACHYBOOP_S3_SECRET_ACCESS_KEY",
 			Value:       "",
-			Destination: &envOpt.s3Secret,
+			Destination: &cfg.S3Output.Secret,
 			Required:    false,
 		},
 	}
