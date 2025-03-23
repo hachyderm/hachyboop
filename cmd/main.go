@@ -71,13 +71,10 @@ A longer sentence, about how exactly to use this program`,
 			hachyboopInstance := service.NewHachyboop()
 			hachyboopInstance.Options = cfg
 
-			// TODO from config.Questions
+			cfg.Questions = strings.Split(cfg.QuestionsRaw, ",")
+			cfg.Resolvers = strings.Split(cfg.ResolversRaw, ",")
 
-			// TODO from config.ResolversRaw
-			cfg.Resolvers = []string{
-				"91.200.176.1:53", // kiki.bunny.net
-				"8.8.8.8:53",
-			}
+			// TODO validate at least one question & one resolver
 
 			return hachyboopInstance.Run()
 		},
