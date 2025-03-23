@@ -17,12 +17,13 @@
 package main
 
 import (
-	"github.com/kris-nova/nova"
-	"github.com/kris-nova/nova/internal/service"
-	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
 	"os"
 	"time"
+
+	nova "github.com/hachyderm/hachyboop"
+	"github.com/hachyderm/hachyboop/internal/service"
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 var cfg = &AppOptions{}
