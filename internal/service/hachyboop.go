@@ -27,10 +27,12 @@ import (
 )
 
 type HachyboopOptions struct {
-	Verbose    bool
-	Resolvers  []string
-	S3Output   *S3Options
-	FileOutput *FileOptions
+	Verbose           bool
+	Resolvers         []string
+	S3Output          *S3Options
+	FileOutput        *FileOptions
+	ObserverId        string
+	ObservationRegion string
 }
 
 type S3Options struct {
@@ -127,12 +129,25 @@ func queryResolvers(resolvers []*dns.TargetedResolver) {
 }
 
 type HachyboopDnsObservation struct {
-	ObservedOn              time.Time
 	ObservedOnUnixTimestamp int64    `parquet:"name=observedonunixtimestamp, type=INT64, convertedtype=TIMESTAMP_MILLIS"`
+	ObservedBy              string   `parquet:"name=observedby, type=BYTE_ARRAY"`
+	ObservedFromRegion      string   `parquet:"name=observedfromregion, type=BYTE_ARRAY"`
 	Host                    string   `parquet:"name=host, type=BYTE_ARRAY"`
 	RecordType              string   `parquet:"name=recordtype, type=BYTE_ARRAY"`
 	Values                  []string `parquet:"name=values, type=MAP, convertedtype=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
 	Error                   string   `parquet:"name=error, type=BYTE_ARRAY"`
 	ResovledByHost          string   `parquet:"name=resolvedby, type=BYTE_ARRAY"`
-	ResolvedBy              *dns.TargetedResolver
+}
+
+func (hb *Hachyboop) NewHachyboopDnsObservationFromDnsResponse(d *dns.DnsResponse) *HachyboopDnsObservation {
+	return &HachyboopDnsObservation{
+		ObservedOnUnixTimestamp: d.ObservedOn.UnixMilli(),
+		Host:                    d.Host,
+		RecordType:              d.RecordType,
+		Values:                  d.Values,
+		Error:                   d.Error,
+		ResovledByHost:          d.ResolvedBy.Host,
+		ObservedBy:              hb.Options.ObserverId,
+		ObservedFromRegion:      hb.Options.ObservationRegion,
+	}
 }

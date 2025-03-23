@@ -14,14 +14,12 @@ type TargetedResolver struct {
 }
 
 type DnsResponse struct {
-	ObservedOn              time.Time
-	ObservedOnUnixTimestamp int64    `parquet:"name=observedonunixtimestamp, type=INT64, convertedtype=TIMESTAMP_MILLIS"`
-	Host                    string   `parquet:"name=host, type=BYTE_ARRAY"`
-	RecordType              string   `parquet:"name=recordtype, type=BYTE_ARRAY"`
-	Values                  []string `parquet:"name=values, type=MAP, convertedtype=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8"`
-	Error                   string   `parquet:"name=error, type=BYTE_ARRAY"`
-	ResovledByHost          string   `parquet:"name=resolvedby, type=BYTE_ARRAY"`
-	ResolvedBy              *TargetedResolver
+	ObservedOn time.Time
+	Host       string
+	RecordType string
+	Values     []string
+	Error      string
+	ResolvedBy *TargetedResolver
 }
 
 func NewTargetedResolver(host, port string, timeoutSeconds int) *TargetedResolver {
@@ -54,12 +52,10 @@ func (tr *TargetedResolver) Lookup(ctx context.Context, host, recordType string)
 	observedOn := time.Now().UTC()
 
 	return &DnsResponse{
-		Host:                    host,
-		Values:                  responses,
-		Error:                   errorText,
-		ResolvedBy:              tr,
-		ResovledByHost:          tr.Host,
-		ObservedOn:              observedOn,
-		ObservedOnUnixTimestamp: observedOn.Local().UnixMilli(),
+		Host:       host,
+		Values:     responses,
+		Error:      errorText,
+		ResolvedBy: tr,
+		ObservedOn: observedOn,
 	}, err
 }

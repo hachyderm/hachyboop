@@ -2,3 +2,5 @@ export HACHYBOOP_S3_HOST=bag-of-holding.fsn1.your-objectstorage.net
 export HACHYBOOP_S3_PATH=some-stuff/some-subfolder
 export HACHYBOOP_S3_ACCESS_KEY_ID=AKIAEXAMPLE
 export HACHYBOOP_S3_SECRET_ACCESS_KEY=secret
+export HACHYBOOP_OBSERVER_ID=esk
+export HACHYBOOP_OBSERVER_REGION=namer-central

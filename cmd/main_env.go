@@ -53,6 +53,18 @@ var (
 			Destination: &cfg.FileOutput.Path,
 			Required:    false,
 		},
+		{
+			Name:        "HACHYBOOP_OBSERVER_ID",
+			Value:       "esk",
+			Destination: &cfg.ObserverId,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_OBSERVER_REGION",
+			Value:       "namer-central",
+			Destination: &cfg.ObservationRegion,
+			Required:    false,
+		},
 	}
 )
 
