@@ -82,10 +82,11 @@ var (
 
 // Entrypoint for Hachyboop!
 func (hb *Hachyboop) Run() error {
+	// TODO do this at app startup and store in hb config
 	resolvers := hb.parseResolvers()
 
 	for Enabled {
-		queryResolvers(resolvers)
+		hb.queryResolvers(resolvers)
 
 		// TODO from config
 		time.Sleep(30 * time.Second)
@@ -116,27 +117,24 @@ func (hb *Hachyboop) parseResolvers() []*dns.TargetedResolver {
 }
 
 // Core work loop that queries the resolvers
-func queryResolvers(resolvers []*dns.TargetedResolver) {
+func (hb *Hachyboop) queryResolvers(resolvers []*dns.TargetedResolver) {
 	for _, resolver := range resolvers {
-		// TODO extract this out
+		for _, question := range hb.Options.Questions {
+			// TODO impl record type (or get rid of it)
+			response, err := resolver.Lookup(context.Background(), question, "A")
 
-		// TODO from config cfg.Questions
-		lookupHost := "hachyderm.io"
+			logFields := logrus.Fields{
+				"host":       response.Host,
+				"response":   response.Values,
+				"resolvedBy": response.ResolvedBy.Host,
+			}
 
-		// TODO impl record type (or get rid of it)
-		response, err := resolver.Lookup(context.Background(), lookupHost, "A")
-
-		logFields := logrus.Fields{
-			"host":       response.Host,
-			"response":   response.Values,
-			"resolvedBy": response.ResolvedBy.Host,
-		}
-
-		if err != nil {
-			logFields["error"] = err.Error()
-			logrus.WithFields(logFields).Warnf("DNS lookup failed")
-		} else {
-			logrus.WithFields(logFields).Infof("DNS lookup completed")
+			if err != nil {
+				logFields["error"] = err.Error()
+				logrus.WithFields(logFields).Warnf("DNS lookup failed")
+			} else {
+				logrus.WithFields(logFields).Infof("DNS lookup completed")
+			}
 		}
 	}
 }
