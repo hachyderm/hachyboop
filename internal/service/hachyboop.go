@@ -29,12 +29,14 @@ import (
 // Configuration options for Hachyboop.
 type HachyboopOptions struct {
 	Verbose           bool
-	Resolvers         []string
 	S3Output          *S3Options
 	FileOutput        *FileOptions
 	ObserverId        string
 	ObservationRegion string
-	QueryTargetsRaw   string // raw input from env/args
+	QuestionsRaw      string // raw input from env/args
+	Questions         []string
+	ResolversRaw      string
+	Resolvers         []string
 }
 
 // Configuration options for our S3 file output.
@@ -118,7 +120,7 @@ func queryResolvers(resolvers []*dns.TargetedResolver) {
 	for _, resolver := range resolvers {
 		// TODO extract this out
 
-		// TODO from config
+		// TODO from config cfg.Questions
 		lookupHost := "hachyderm.io"
 
 		// TODO impl record type (or get rid of it)

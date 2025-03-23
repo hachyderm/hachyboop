@@ -66,9 +66,15 @@ var (
 			Required:    false,
 		},
 		{
-			Name:        "HACHYBOOP_QUERY_TARGETS",
+			Name:        "HACHYBOOP_QUESTIONS",
 			Value:       "hachyderm.io",
-			Destination: &cfg.QueryTargetsRaw,
+			Destination: &cfg.QuestionsRaw,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_RESOLVERS",
+			Value:       "hachyderm.io",
+			Destination: &cfg.ResolversRaw,
 			Required:    false,
 		},
 	}
