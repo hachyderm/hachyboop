@@ -18,15 +18,19 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/hachyderm/hachyboop/internal/dns"
 	"github.com/hachyderm/hachyboop/pkg/api"
 	"github.com/sirupsen/logrus"
 
 	"github.com/xitongsys/parquet-go-source/local"
+	"github.com/xitongsys/parquet-go-source/s3"
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/source"
 	"github.com/xitongsys/parquet-go/writer"
@@ -49,7 +53,8 @@ type HachyboopOptions struct {
 
 // Configuration options for our S3 file output.
 type S3Options struct {
-	Host      string
+	Endpoint  string
+	Bucket    string
 	Path      string
 	AccessKey string
 	Secret    string
@@ -57,15 +62,16 @@ type S3Options struct {
 
 // Configuration options for our local file output.
 type FileOptions struct {
-	Path          string
-	FileName      string
+	Path     string
+	FileName string
+
 	ParquetFile   source.ParquetFile
 	ParquetWriter *writer.ParquetWriter
 }
 
 // True if we should output to S3.
 func (s *S3Options) Enabled() bool {
-	return s.Host != ""
+	return s.Endpoint != ""
 }
 
 // True if we should output to a local file.
@@ -165,29 +171,7 @@ func (hb *Hachyboop) parseResolvers() []*dns.TargetedResolver {
 
 // Core work loop that queries the resolvers
 func (hb *Hachyboop) queryResolvers(resolvers []*dns.TargetedResolver) {
-	logrus.Debug("Prepping local file writer")
-
-	path := filepath.Join(hb.Options.FileOutput.Path, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
-	logrus.WithField("filepath", path).Info("Parquet output path prepared")
-
-	logrus.Debug("preparing local file writer")
-	fw, err := local.NewLocalFileWriter(path)
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to create local file writer")
-	}
-	defer fw.Close()
-
-	logrus.Debug("Prepping parquet writer")
-	pw, err := writer.NewParquetWriter(fw, new(HachyboopDnsObservation), 4)
-	if err != nil {
-		logrus.WithError(err).Fatal("Couldn't create parquet writer")
-	}
-	defer pw.WriteStop()
-
-	// TODO configurable
-	pw.RowGroupSize = 128 * 1024 * 1024 //128M
-	pw.PageSize = 8 * 1024              //8K
-	pw.CompressionType = parquet.CompressionCodec_SNAPPY
+	observations := []*HachyboopDnsObservation{}
 
 	for _, resolver := range resolvers {
 		for _, question := range hb.Options.Questions {
@@ -210,19 +194,87 @@ func (hb *Hachyboop) queryResolvers(resolvers []*dns.TargetedResolver) {
 			}
 
 			obs := hb.NewHachyboopDnsObservationFromDnsResponse(response)
-			hb.Options.ObservationHandler <- obs
+			observations = append(observations, obs)
 
 			logrus.WithField("obs", obs).Debug("converted object")
-
-			if err = pw.Write(obs); err != nil {
-				logrus.WithError(err).Error("failed to write parquet")
-			}
 		}
 	}
 
-	if err := pw.WriteStop(); err != nil {
-		logrus.WithError(err).Error("Failed to close parquet file")
+	// TODO make this more dynamic/clean, maybe parallel
+	hb.writeObservationsToLocalFile(observations)
+	hb.writeObservationsToS3(observations)
+}
+
+func (hb *Hachyboop) writeObservationsToLocalFile(observations []*HachyboopDnsObservation) {
+	logrus.Debug("Prepping local file writer")
+	path := filepath.Join(hb.Options.FileOutput.Path, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
+	logrus.WithField("filepath", path).Info("Parquet output path prepared")
+
+	fw, err := local.NewLocalFileWriter(path)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to create local file writer")
 	}
+	defer fw.Close()
+
+	logrus.Debug("Prepping parquet writer")
+	pw, err := hb.newParquetFileWriter(fw)
+	defer func() {
+		if err := pw.WriteStop(); err != nil {
+			logrus.WithError(err).Error("Failed to write to S3, parquet file likely corrupted")
+		}
+	}()
+
+	for _, obs := range observations {
+		if err = pw.Write(obs); err != nil {
+			logrus.WithError(err).Error("failed to write parquet")
+		}
+	}
+}
+
+func (hb *Hachyboop) writeObservationsToS3(observations []*HachyboopDnsObservation) {
+	logrus.Debug("Preparing S3 file writer")
+	path := filepath.Join(hb.Options.S3Output.Path, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
+
+	awsCfg := &aws.Config{
+		Region:      aws.String("US"),
+		Credentials: credentials.NewStaticCredentials(hb.Options.S3Output.AccessKey, hb.Options.S3Output.Secret, ""),
+		Endpoint:    aws.String(hb.Options.S3Output.Endpoint),
+	}
+
+	// TODO plumb context
+	fw, err := s3.NewS3FileWriter(context.Background(), hb.Options.S3Output.Bucket, path, "bucket-owner-full-control", nil, awsCfg)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to create S3 writer")
+	}
+	defer fw.Close()
+
+	pw, err := hb.newParquetFileWriter(fw)
+	defer func() {
+		if err := pw.WriteStop(); err != nil {
+			logrus.WithError(err).Error("Failed to write to S3, parquet file likely corrupted")
+		}
+	}()
+
+	for _, obs := range observations {
+		if err = pw.Write(obs); err != nil {
+			logrus.WithError(err).Error("failed to write parquet")
+		}
+	}
+}
+
+func (hb *Hachyboop) newParquetFileWriter(fw source.ParquetFile) (*writer.ParquetWriter, error) {
+	logrus.Debug("Prepping parquet writer")
+	pw, err := writer.NewParquetWriter(fw, new(HachyboopDnsObservation), 4)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to created ParquetWriter: %w", err)
+	}
+
+	// TODO configurable
+	pw.RowGroupSize = 128 * 1024 * 1024 //128M
+	pw.PageSize = 8 * 1024              //8K
+	pw.CompressionType = parquet.CompressionCodec_SNAPPY
+
+	return pw, nil
 }
 
 // Model object suitable for serializing to parquet
