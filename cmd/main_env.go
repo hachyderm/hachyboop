@@ -21,42 +21,66 @@ import (
 	"os"
 )
 
-var env = &EnvironmentOptions{}
-
-type EnvironmentOptions struct {
-
-	// example fields
-	s3Host      string
-	s3Path      string
-	s3AccessKey string
-	s3Secret    string
-}
-
 var (
-	envOpt   = &EnvironmentOptions{}
 	registry = []*EnvironmentVariable{
 		{
 			Name:        "HACHYBOOP_S3_HOST",
 			Value:       "",
-			Destination: &envOpt.s3Host,
+			Destination: &cfg.S3Output.Host,
 			Required:    false,
 		},
 		{
 			Name:        "HACHYBOOP_S3_PATH",
 			Value:       "",
-			Destination: &envOpt.s3Path,
+			Destination: &cfg.S3Output.Path,
 			Required:    false,
 		},
 		{
-			Name:        "HACHYBOOP_S3_ACCESS_KEY",
+			Name:        "HACHYBOOP_S3_ACCESS_KEY_ID",
 			Value:       "",
-			Destination: &envOpt.s3AccessKey,
+			Destination: &cfg.S3Output.AccessKey,
 			Required:    false,
 		},
 		{
-			Name:        "HACHYBOOP_S3_SECRET",
+			Name:        "HACHYBOOP_S3_SECRET_ACCESS_KEY",
 			Value:       "",
-			Destination: &envOpt.s3Secret,
+			Destination: &cfg.S3Output.Secret,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_LOCAL_RESULTS_PATH",
+			Value:       "data",
+			Destination: &cfg.FileOutput.Path,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_LOCAL_RESULTS_FILE_NAME",
+			Value:       "data",
+			Destination: &cfg.FileOutput.FileName,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_OBSERVER_ID",
+			Value:       "esk",
+			Destination: &cfg.ObserverId,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_OBSERVER_REGION",
+			Value:       "namer-central",
+			Destination: &cfg.ObservationRegion,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_QUESTIONS",
+			Value:       "hachyderm.io",
+			Destination: &cfg.QuestionsRaw,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_RESOLVERS",
+			Value:       "hachyderm.io",
+			Destination: &cfg.ResolversRaw,
 			Required:    false,
 		},
 	}

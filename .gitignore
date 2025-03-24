@@ -5,3 +5,5 @@
 hachyboop
 release
 .vscode/
+.envrc
+data/
