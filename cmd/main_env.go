@@ -48,9 +48,15 @@ var (
 			Required:    false,
 		},
 		{
-			Name:        "HACHYBOOP_RESULTS_PATH",
+			Name:        "HACHYBOOP_LOCAL_RESULTS_PATH",
 			Value:       "data",
 			Destination: &cfg.FileOutput.Path,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_LOCAL_RESULTS_FILE_NAME",
+			Value:       "data",
+			Destination: &cfg.FileOutput.FileName,
 			Required:    false,
 		},
 		{

@@ -73,6 +73,7 @@ A longer sentence, about how exactly to use this program`,
 
 			cfg.Questions = strings.Split(cfg.QuestionsRaw, ",")
 			cfg.Resolvers = strings.Split(cfg.ResolversRaw, ",")
+			cfg.ObservationHandler = make(chan *service.HachyboopDnsObservation, 32)
 
 			// TODO validate at least one question & one resolver
 

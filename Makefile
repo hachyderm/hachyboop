@@ -14,6 +14,8 @@
 #                                                                             #
 # =========================================================================== #
 
+DATADIR := data
+
 .PHONY: all
 all: compile
 
@@ -66,3 +68,11 @@ release: ## Make the binaries for a GitHub release 📦
 .PHONY: help
 help:  ## 🤔 Show help messages for make targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: querylast
+querylast:
+	duckdb -c "select * from read_parquet('${DATADIR}/$(shell ls -t data | head -n1)');"
+
+.PHONY: queryall
+queryall:
+	duckdb -c "select * from read_parquet('data/*.parquet');"
