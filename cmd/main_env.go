@@ -24,9 +24,15 @@ import (
 var (
 	registry = []*EnvironmentVariable{
 		{
-			Name:        "HACHYBOOP_S3_HOST",
+			Name:        "HACHYBOOP_S3_ENDPOINT",
 			Value:       "",
-			Destination: &cfg.S3Output.Host,
+			Destination: &cfg.S3Output.Endpoint,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_S3_BUCKET",
+			Value:       "",
+			Destination: &cfg.S3Output.Bucket,
 			Required:    false,
 		},
 		{
