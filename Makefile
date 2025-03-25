@@ -96,7 +96,3 @@ querylast:
 .PHONY: queryall
 queryall:
 	duckdb -c "select * from read_parquet('data/*.parquet');"
-
-.PHONY: querys3
-querys3:
-	duckdb -c "select * from read_parquet('s3://hachyderm-infra-dev/hachyboop/esk/*.parquet')"
