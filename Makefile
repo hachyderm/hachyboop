@@ -40,6 +40,26 @@ compile: ## Compile for the local architecture ⚙
 	-X 'github.com/$(org)/$(target).Name=$(target)'" \
 	-o $(target) cmd/*.go
 
+.PHONY: container
+container:
+	docker build . -t $(target):latest
+
+.PHONY: runcontainer
+runcontainer: container
+	docker run \
+		-e HACHYBOOP_S3_ENDPOINT \
+		-e HACHYBOOP_S3_BUCKET \
+		-e HACHYBOOP_S3_PATH \
+		-e HACHYBOOP_S3_ACCESS_KEY_ID \
+		-e HACHYBOOP_S3_SECRET_ACCESS_KEY \
+		-e HACHYBOOP_OBSERVER_ID \
+		-e HACHYBOOP_OBSERVER_REGION \
+		-e HACHYBOOP_RESOLVERS \
+		-e HACHYBOOP_QUESTIONS \
+		-e HACHYBOOP_LOCAL_RESULTS_PATH \
+		--mount type=bind,src=data/,dst=/data \
+	 	$(target):latest
+
 .PHONY: install
 install: ## Install the program to /usr/bin 🎉
 	@echo "Installing..."
