@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -53,17 +54,19 @@ type HachyboopOptions struct {
 
 // Configuration options for our S3 file output.
 type S3Options struct {
-	Endpoint  string
-	Bucket    string
-	Path      string
-	AccessKey string
-	Secret    string
+	Endpoint   string
+	Bucket     string
+	Path       string
+	AccessKey  string
+	Secret     string
+	EnabledRaw string
 }
 
 // Configuration options for our local file output.
 type FileOptions struct {
-	Path     string
-	FileName string
+	Path       string
+	FileName   string
+	EnabledRaw string
 
 	ParquetFile   source.ParquetFile
 	ParquetWriter *writer.ParquetWriter
@@ -71,12 +74,24 @@ type FileOptions struct {
 
 // True if we should output to S3.
 func (s *S3Options) Enabled() bool {
-	return s.Endpoint != ""
+	res, err := strconv.ParseBool(s.EnabledRaw)
+
+	if err != nil {
+		logrus.WithError(err).WithField("input", s.EnabledRaw).Warn("Couldn't parse a bool from HACHYBOOP_S3_WRITER_ENABLED")
+	}
+
+	return res
 }
 
 // True if we should output to a local file.
 func (f *FileOptions) Enabled() bool {
-	return f.Path != ""
+	res, err := strconv.ParseBool(f.EnabledRaw)
+
+	if err != nil {
+		logrus.WithError(err).WithField("input", f.EnabledRaw).Warn("Couldn't parse a bool from HACHYBOOP_S3_WRITER_ENABLED")
+	}
+
+	return res
 }
 
 // Compile check *Hachyboop implements Runner interface
@@ -119,6 +134,14 @@ func (hb *Hachyboop) Run() error {
 
 	// TODO do this at app startup and store in hb config
 	resolvers := hb.parseResolvers()
+
+	if !hb.Options.FileOutput.Enabled() {
+		logrus.Warn("Local parquet output is not enabled. Set HACHYBOOP_LOCAL_WRITER_ENABLED to 'true' to enable.")
+	}
+
+	if !hb.Options.S3Output.Enabled() {
+		logrus.Warn("S3 parquet output is not enabled. Set HACHYBOOP_S3_WRITER_ENABLED to 'true' to enable.")
+	}
 
 	for Enabled {
 		hb.queryResolvers(resolvers)
@@ -195,20 +218,23 @@ func (hb *Hachyboop) queryResolvers(resolvers []*dns.TargetedResolver) {
 
 			obs := hb.NewHachyboopDnsObservationFromDnsResponse(response)
 			observations = append(observations, obs)
-
-			logrus.WithField("obs", obs).Debug("converted object")
 		}
 	}
 
 	// TODO make this more dynamic/clean, maybe parallel
-	hb.writeObservationsToLocalFile(observations)
-	hb.writeObservationsToS3(observations)
+	if hb.Options.FileOutput.Enabled() {
+		hb.writeObservationsToLocalFile(observations)
+	}
+
+	if hb.Options.S3Output.Enabled() {
+		hb.writeObservationsToS3(observations)
+	}
 }
 
 func (hb *Hachyboop) writeObservationsToLocalFile(observations []*HachyboopDnsObservation) {
 	logrus.Debug("Prepping local file writer")
 	path := filepath.Join(hb.Options.FileOutput.Path, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
-	logrus.WithField("filepath", path).Info("Parquet output path prepared")
+	logrus.WithField("filepath", path).Debug("Parquet local path prepared")
 
 	fw, err := local.NewLocalFileWriter(path)
 	if err != nil {
@@ -216,17 +242,18 @@ func (hb *Hachyboop) writeObservationsToLocalFile(observations []*HachyboopDnsOb
 	}
 	defer fw.Close()
 
-	logrus.Debug("Prepping parquet writer")
 	pw, err := hb.newParquetFileWriter(fw)
 	defer func() {
+		logrus.Debug("Writing parquet footer to local file")
 		if err := pw.WriteStop(); err != nil {
-			logrus.WithError(err).Error("Failed to write to S3, parquet file likely corrupted")
+			logrus.WithError(err).Error("Failed to write footer to local file, parquet file likely corrupted")
 		}
 	}()
 
+	logrus.Debug("Writing parquet data to local file")
 	for _, obs := range observations {
 		if err = pw.Write(obs); err != nil {
-			logrus.WithError(err).Error("failed to write parquet")
+			logrus.WithError(err).Error("Failed to write parquet to local file")
 		}
 	}
 }
@@ -234,6 +261,7 @@ func (hb *Hachyboop) writeObservationsToLocalFile(observations []*HachyboopDnsOb
 func (hb *Hachyboop) writeObservationsToS3(observations []*HachyboopDnsObservation) {
 	logrus.Debug("Preparing S3 file writer")
 	path := filepath.Join(hb.Options.S3Output.Path, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
+	logrus.WithField("s3path", "s3://"+filepath.Join(hb.Options.S3Output.Bucket, path)).Debug("S3 output path prepared")
 
 	awsCfg := &aws.Config{
 		Region:      aws.String("US"),
@@ -250,14 +278,16 @@ func (hb *Hachyboop) writeObservationsToS3(observations []*HachyboopDnsObservati
 
 	pw, err := hb.newParquetFileWriter(fw)
 	defer func() {
+		logrus.Debug("Writing parquet footer to S3")
 		if err := pw.WriteStop(); err != nil {
-			logrus.WithError(err).Error("Failed to write to S3, parquet file likely corrupted")
+			logrus.WithError(err).Error("Failed to write footer to S3, parquet file likely corrupted")
 		}
 	}()
 
+	logrus.Debug("Writing parquet data to S3")
 	for _, obs := range observations {
 		if err = pw.Write(obs); err != nil {
-			logrus.WithError(err).Error("failed to write parquet")
+			logrus.WithError(err).Error("Failed to write parquet to S3")
 		}
 	}
 }

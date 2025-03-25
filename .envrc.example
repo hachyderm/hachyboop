@@ -1,10 +1,29 @@
+##################################################
+# Hachyboop Common Environment Variables
+##################################################
+
+## Metadata
+
+### Identifying metadata - helps us understand who you are (anonymized OK) and where you're coming from (broadly)
+export HACHYBOOP_OBSERVER_ID=esk
+export HACHYBOOP_OBSERVER_REGION=exandria
+
+## DNS Configuration
+
+### Resolvers and questions - what DNS entries are you poking, and who are you asking?
+export HACHYBOOP_RESOLVERS=91.200.176.1:53,8.8.8.8:53
+export HACHYBOOP_QUESTIONS=hachyderm.io,hachyderm.wtf
+
+## Writers
+
+### S3 writer - writes parquet to the specified S3 bucket
+export HACHYBOOP_S3_WRITER_ENABLED=true
 export HACHYBOOP_S3_ENDPOINT=fsn1.your-objectstorage.net
 export HACHYBOOP_S3_BUCKET=bag-of-holding
 export HACHYBOOP_S3_PATH=some-stuff/some-subfolder
 export HACHYBOOP_S3_ACCESS_KEY_ID=AKIAEXAMPLE
 export HACHYBOOP_S3_SECRET_ACCESS_KEY=secret
-export HACHYBOOP_OBSERVER_ID=esk
-export HACHYBOOP_OBSERVER_REGION=exandria
-export HACHYBOOP_RESOLVERS=91.200.176.1:53,8.8.8.8:53
-export HACHYBOOP_QUESTIONS=hachyderm.io,hachyderm.wtf
+
+### Local file writer - writes parquet to a local file on disk
+export HACHYBOOP_LOCAL_WRITER_ENABLED=true
 export HACHYBOOP_LOCAL_RESULTS_PATH=data

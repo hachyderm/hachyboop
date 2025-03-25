@@ -24,6 +24,12 @@ import (
 var (
 	registry = []*EnvironmentVariable{
 		{
+			Name:        "HACHYBOOP_S3_WRITER_ENABLED",
+			Value:       "false",
+			Destination: &cfg.S3Output.EnabledRaw,
+			Required:    false,
+		},
+		{
 			Name:        "HACHYBOOP_S3_ENDPOINT",
 			Value:       "",
 			Destination: &cfg.S3Output.Endpoint,
@@ -51,6 +57,12 @@ var (
 			Name:        "HACHYBOOP_S3_SECRET_ACCESS_KEY",
 			Value:       "",
 			Destination: &cfg.S3Output.Secret,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_LOCAL_WRITER_ENABLED",
+			Value:       "false",
+			Destination: &cfg.FileOutput.EnabledRaw,
 			Required:    false,
 		},
 		{
