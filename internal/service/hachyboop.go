@@ -258,7 +258,7 @@ func (hb *Hachyboop) queryResolvers(resolvers []*dns.TargetedResolver) {
 
 func (hb *Hachyboop) writeObservationsToLocalFile(observations []*HachyboopDnsObservation) {
 	logrus.Debug("Prepping local file writer")
-	path := filepath.Join(hb.Options.FileOutput.Path, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
+	path := filepath.Join(hb.Options.FileOutput.Path, hb.Options.ObserverId, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
 	logrus.WithField("filepath", path).Debug("Parquet local path prepared")
 
 	fw, err := local.NewLocalFileWriter(path)

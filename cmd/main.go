@@ -86,6 +86,8 @@ A longer sentence, about how exactly to use this program`,
 			cfg.TestFrequencySeconds = testSec
 			logrus.WithField("seconds", cfg.TestFrequencySeconds).Info("Running tests every x seconds")
 
+			// TODO need to clean the observer id to conform to S3 or reject if doesn't conform. also no /
+
 			// TODO make this dynamic and less hardcoded
 			if cfg.RuntimeCloudProviderMetadata.BunnyPodId != "" {
 				logrus.Info("Cloud provider: Bunny Magic Container Runtime detected")
