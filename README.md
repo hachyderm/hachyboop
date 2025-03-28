@@ -1,4 +1,4 @@
-# Hachyboop!
+# Hachyboop! 👉🐘
 
 Testing utility to poke hachyderm.io from various angles. Writes data to parquet for later bulk analysis.
 
