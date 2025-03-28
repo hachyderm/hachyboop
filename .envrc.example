@@ -24,7 +24,7 @@ export HACHYBOOP_QUESTIONS=hachyderm.io,hachyderm.wtf
 
 ### S3 writer - writes parquet to the specified S3 bucket
 export HACHYBOOP_S3_WRITER_ENABLED=true
-export HACHYBOOP_S3_ENDPOINT=fsn1.your-objectstorage.net
+export HACHYBOOP_S3_ENDPOINT=fsn1.your-objectstorage.com
 export HACHYBOOP_S3_BUCKET=bag-of-holding
 export HACHYBOOP_S3_PATH=some-stuff/some-subfolder
 export HACHYBOOP_S3_ACCESS_KEY_ID=AKIAEXAMPLE
