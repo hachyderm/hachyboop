@@ -38,8 +38,9 @@ var banner = `
 `
 
 var cfg = &service.HachyboopOptions{
-	S3Output:   &service.S3Options{},
-	FileOutput: &service.FileOptions{},
+	S3Output:                     &service.S3Options{},
+	FileOutput:                   &service.FileOptions{},
+	RuntimeCloudProviderMetadata: &service.RuntimeCloudProviderMetadata{},
 }
 
 func main() {
@@ -83,6 +84,8 @@ A longer sentence, about how exactly to use this program`,
 				cfg.ObserverId = fmt.Sprintf("%s/%s", cfg.RuntimeCloudProviderMetadata.BunnyAppId, cfg.RuntimeCloudProviderMetadata.BunnyPodId)
 			}
 
+			logrus.WithField("observer", cfg.ObservationRegion).WithField("region", cfg.ObservationRegion).Debug("Set region and observer")
+
 			// TODO validate at least one question & one resolver
 
 			return hachyboopInstance.Run()
@@ -97,7 +100,7 @@ A longer sentence, about how exactly to use this program`,
 	}
 	logrus.Info("==========================================================================")
 
-	logrus.Debugf("Parsing config")
+	logrus.Debug("Parsing config")
 
 	// Load environment variables
 	err = Environment()
@@ -109,7 +112,7 @@ A longer sentence, about how exactly to use this program`,
 	// Arbitrary (non-error) pre load
 	BeforeAppRun()
 
-	logrus.Debugf("Entering main app loop")
+	logrus.Debug("Entering main app loop")
 
 	// Runtime
 	err = app.Run(context.Background(), os.Args)
