@@ -49,6 +49,8 @@ type HachyboopOptions struct {
 	Questions                    []string
 	ResolversRaw                 string
 	Resolvers                    []string
+	TestFrequencySecondsRaw      string
+	TestFrequencySeconds         int
 
 	ObservationHandler chan *HachyboopDnsObservation
 }
@@ -169,8 +171,8 @@ func (hb *Hachyboop) Run() error {
 	for Enabled {
 		hb.queryResolvers(resolvers)
 
-		// TODO from config
-		time.Sleep(10 * time.Second)
+		logrus.WithField("seconds", hb.Options.TestFrequencySeconds).Debug("Sleeping")
+		time.Sleep(time.Duration(hb.Options.TestFrequencySeconds) * time.Second)
 	}
 	return nil
 }

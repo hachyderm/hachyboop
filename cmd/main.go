@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	hb "github.com/hachyderm/hachyboop"
@@ -76,6 +77,14 @@ A longer sentence, about how exactly to use this program`,
 			cfg.Questions = strings.Split(cfg.QuestionsRaw, ",")
 			cfg.Resolvers = strings.Split(cfg.ResolversRaw, ",")
 			cfg.ObservationHandler = make(chan *service.HachyboopDnsObservation, 32)
+
+			testSec, err := strconv.Atoi(cfg.TestFrequencySecondsRaw)
+			if err != nil {
+				logrus.WithField("rawValue", cfg.TestFrequencySecondsRaw).Warn("couldn't convert HACHYBOOP_TEST_FREQUENCY_SECONDS to an int, defaulting to 300")
+				testSec = 300
+			}
+			cfg.TestFrequencySeconds = testSec
+			logrus.WithField("seconds", cfg.TestFrequencySeconds).Info("Running tests every x seconds")
 
 			// TODO make this dynamic and less hardcoded
 			if cfg.RuntimeCloudProviderMetadata.BunnyPodId != "" {

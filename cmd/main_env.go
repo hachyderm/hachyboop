@@ -125,6 +125,12 @@ var (
 			Destination: &cfg.ResolversRaw,
 			Required:    false,
 		},
+		{
+			Name:        "HACHYBOOP_TEST_FREQUENCY_SECONDS",
+			Value:       "300",
+			Destination: &cfg.TestFrequencySecondsRaw,
+			Required:    false,
+		},
 	}
 )
 
@@ -137,12 +143,16 @@ type EnvironmentVariable struct {
 
 func Environment() error {
 	for _, v := range registry {
-		v.Value = os.Getenv(v.Name)
-		if v.Required && v.Value == "" {
+		readValue := os.Getenv(v.Name)
+		if v.Required && readValue == "" {
 			// If required and the variable is empty
 			return fmt.Errorf("empty or undefined environmental variable [%s]", v.Name)
 		}
-		*v.Destination = v.Value
+
+		if readValue != "" {
+			v.Value = readValue // we don't use v.Value but why not
+			*v.Destination = readValue
+		}
 	}
 	return nil
 }
