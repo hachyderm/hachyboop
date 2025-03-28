@@ -39,7 +39,7 @@ Hachyboop performs the following types of tests:
 ```
 
 > [!IMPORTANT]  
-> Hachyboop DOES NOT collect any personal data or machine data beyond the data you explicitly provide us, the answers to DNS queries, and performance data related to the tests. By default, Hachyboop does not write results to Hachyderm S3 Storage.
+> Hachyboop DOES NOT and WILL NEVER collect any personal data or machine data beyond the data you explicitly provide us, the answers to DNS queries, and performance data related to the tests. By default, Hachyboop does not write results to Hachyderm S3 Storage.
 
 ## Configuration
 
@@ -109,4 +109,15 @@ When choosing a value, choose the value that most closely matches how you would 
 - Australia
   - australia-east
   - australia-west
+
+## Example of collected data
+
+> [!IMPORTANT]  
+> Repeating this, because it's important. Hachyboop DOES NOT and WILL NEVER collect any personal data or machine data beyond the data you explicitly provide us, the answers to DNS queries, and performance data related to the tests. By default, Hachyboop does not write results to Hachyderm S3 Storage.
+
+Here's a screenshot of the data we collect with `hachyboop`. The `observedby` and `observationregion` fields were supplied via the `HACHYBOOP_*` environment variables above.
+
+![image](https://github.com/user-attachments/assets/3e1a8ddf-7777-4336-8139-b233e53839c6)
+
+  
 
