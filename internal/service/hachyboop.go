@@ -285,8 +285,8 @@ func (hb *Hachyboop) writeObservationsToLocalFile(observations []*HachyboopDnsOb
 
 func (hb *Hachyboop) writeObservationsToS3(observations []*HachyboopDnsObservation) {
 	logrus.Debug("Preparing S3 file writer")
-	path := filepath.Join(hb.Options.S3Output.Path, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
-	logrus.WithField("s3path", "s3://"+filepath.Join(hb.Options.S3Output.Bucket, path, hb.Options.ObserverId)).Debug("S3 output path prepared")
+	path := filepath.Join(hb.Options.S3Output.Path, hb.Options.ObserverId, time.Now().UTC().Format("2006-01-02T15.04.05.parquet"))
+	logrus.WithField("s3path", "s3://"+filepath.Join(hb.Options.S3Output.Bucket, path)).Debug("S3 output path prepared")
 
 	awsCfg := &aws.Config{
 		Region:      aws.String("US"),
