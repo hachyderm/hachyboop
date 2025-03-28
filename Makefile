@@ -40,6 +40,10 @@ compile: ## Compile for the local architecture ⚙
 	-X 'github.com/$(org)/$(target).Name=$(target)'" \
 	-o $(target) cmd/*.go
 
+.PHONY: run
+run: compile
+	./hachyboop
+
 .PHONY: container
 container:
 	docker build . -t $(target):latest
@@ -57,6 +61,11 @@ runcontainer: container
 		-e HACHYBOOP_RESOLVERS \
 		-e HACHYBOOP_QUESTIONS \
 		-e HACHYBOOP_LOCAL_RESULTS_PATH \
+		-e BUNNYNET_MC_REGION \
+		-e BUNNYNET_MC_ZONE \
+		-e BUNNYNET_MC_APPID \
+		-e BUNNYNET_MC_PODID \
+		-e HACHYBOOP_TEST_FREQUENCY_SECONDS \
 		--mount type=bind,src=data/,dst=/data \
 	 	$(target):latest
 

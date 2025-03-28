@@ -18,7 +18,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	hb "github.com/hachyderm/hachyboop"
@@ -37,8 +39,9 @@ var banner = `
 `
 
 var cfg = &service.HachyboopOptions{
-	S3Output:   &service.S3Options{},
-	FileOutput: &service.FileOptions{},
+	S3Output:                     &service.S3Options{},
+	FileOutput:                   &service.FileOptions{},
+	RuntimeCloudProviderMetadata: &service.RuntimeCloudProviderMetadata{},
 }
 
 func main() {
@@ -75,6 +78,23 @@ A longer sentence, about how exactly to use this program`,
 			cfg.Resolvers = strings.Split(cfg.ResolversRaw, ",")
 			cfg.ObservationHandler = make(chan *service.HachyboopDnsObservation, 32)
 
+			testSec, err := strconv.Atoi(cfg.TestFrequencySecondsRaw)
+			if err != nil {
+				logrus.WithField("rawValue", cfg.TestFrequencySecondsRaw).Warn("couldn't convert HACHYBOOP_TEST_FREQUENCY_SECONDS to an int, defaulting to 300")
+				testSec = 300
+			}
+			cfg.TestFrequencySeconds = testSec
+			logrus.WithField("seconds", cfg.TestFrequencySeconds).Info("Running tests every x seconds")
+
+			// TODO make this dynamic and less hardcoded
+			if cfg.RuntimeCloudProviderMetadata.BunnyPodId != "" {
+				logrus.Info("Cloud provider: Bunny Magic Container Runtime detected")
+				cfg.ObservationRegion = fmt.Sprintf("%s/%s", cfg.RuntimeCloudProviderMetadata.BunnyRegion, cfg.RuntimeCloudProviderMetadata.BunnyZone)
+				cfg.ObserverId = fmt.Sprintf("%s/%s", cfg.RuntimeCloudProviderMetadata.BunnyAppId, cfg.RuntimeCloudProviderMetadata.BunnyPodId)
+			}
+
+			logrus.WithField("observer", cfg.ObserverId).WithField("region", cfg.ObservationRegion).Debug("Set region and observer")
+
 			// TODO validate at least one question & one resolver
 
 			return hachyboopInstance.Run()
@@ -89,7 +109,7 @@ A longer sentence, about how exactly to use this program`,
 	}
 	logrus.Info("==========================================================================")
 
-	logrus.Debugf("Parsing config")
+	logrus.Debug("Parsing config")
 
 	// Load environment variables
 	err = Environment()
@@ -101,7 +121,7 @@ A longer sentence, about how exactly to use this program`,
 	// Arbitrary (non-error) pre load
 	BeforeAppRun()
 
-	logrus.Debugf("Entering main app loop")
+	logrus.Debug("Entering main app loop")
 
 	// Runtime
 	err = app.Run(context.Background(), os.Args)

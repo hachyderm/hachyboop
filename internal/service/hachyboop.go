@@ -39,15 +39,18 @@ import (
 
 // Configuration options for Hachyboop.
 type HachyboopOptions struct {
-	Verbose           bool
-	S3Output          *S3Options
-	FileOutput        *FileOptions
-	ObserverId        string
-	ObservationRegion string
-	QuestionsRaw      string // raw input from env/args
-	Questions         []string
-	ResolversRaw      string
-	Resolvers         []string
+	Verbose                      bool
+	S3Output                     *S3Options
+	FileOutput                   *FileOptions
+	RuntimeCloudProviderMetadata *RuntimeCloudProviderMetadata
+	ObserverId                   string
+	ObservationRegion            string
+	QuestionsRaw                 string // raw input from env/args
+	Questions                    []string
+	ResolversRaw                 string
+	Resolvers                    []string
+	TestFrequencySecondsRaw      string
+	TestFrequencySeconds         int
 
 	ObservationHandler chan *HachyboopDnsObservation
 }
@@ -72,8 +75,26 @@ type FileOptions struct {
 	ParquetWriter *writer.ParquetWriter
 }
 
+// Mostly for runtime provider contextual info
+type RuntimeCloudProviderMetadata struct {
+	// eventually we'll do something magical/dynamic to choose a provider based on detected runtime. for now, keeping it simple.
+	// Bunny stuff https://docs.bunny.net/docs/magic-containers-app-metadata
+	// BUNNYNET_MC_REGION
+	BunnyRegion string
+	// BUNNYNET_MC_PODID
+	BunnyPodId string
+	// BUNNYNET_MC_ZONE
+	BunnyZone string
+	// BUNNYNET_MC_APPID
+	BunnyAppId string
+}
+
 // True if we should output to S3.
 func (s *S3Options) Enabled() bool {
+	if s.EnabledRaw == "" {
+		return false
+	}
+
 	res, err := strconv.ParseBool(s.EnabledRaw)
 
 	if err != nil {
@@ -85,6 +106,10 @@ func (s *S3Options) Enabled() bool {
 
 // True if we should output to a local file.
 func (f *FileOptions) Enabled() bool {
+	if f.EnabledRaw == "" {
+		return false
+	}
+
 	res, err := strconv.ParseBool(f.EnabledRaw)
 
 	if err != nil {
@@ -146,8 +171,8 @@ func (hb *Hachyboop) Run() error {
 	for Enabled {
 		hb.queryResolvers(resolvers)
 
-		// TODO from config
-		time.Sleep(10 * time.Second)
+		logrus.WithField("seconds", hb.Options.TestFrequencySeconds).Debug("Sleeping")
+		time.Sleep(time.Duration(hb.Options.TestFrequencySeconds) * time.Second)
 	}
 	return nil
 }

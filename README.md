@@ -56,9 +56,15 @@ Hachyboop provides several environment variables to configure how it behaves. If
 export HACHYBOOP_OBSERVER_ID=esk  # unique (or not) identifier for you. recommendation is you provide a pseudonym or generated unique ID.
 export HACHYBOOP_OBSERVER_REGION=exandria  # see below, region code that most closely matches where you are
 
-## DNS Configuration
+## Testing parameters
 
-### Resolvers and questions - what DNS entries are you poking, and who are you asking?
+### Frequency
+
+export HACHYBOOP_TEST_FREQUENCY_SECONDS=300 # how often should we run our rtest?
+
+### DNS Configuration
+
+#### Resolvers and questions - what DNS entries are you poking, and who are you asking?
 export HACHYBOOP_RESOLVERS=91.200.176.1:53,8.8.8.8:53  # comma-separated, requires port number, e.g. 8.8.8.8:53
 export HACHYBOOP_QUESTIONS=hachyderm.io  # which records do you want to test
 
@@ -110,6 +116,14 @@ When choosing a value, choose the value that most closely matches how you would 
   - australia-east
   - australia-west
 
+### Runtime cloud detection
+
+Hachyboop can detect some clouds based on metadata available to it. It will detect:
+
+- **Bunny.net Magic Containers** - if `BUNNYNET_MC_PODIP` is present in the environment it will set (and override):
+  - `HACHYBOOP_OBSERVER_ID` = `BUNNYNET_MC_APPID` / `BUNNYNET_MC_PODIP`
+  - `HACHYBOOP_OBSERVER_REGION` = `BUNNYNET_MC_REGION` / `BUNNYNET_MC_ZONE`
+
 ## Example of collected data
 
 > [!IMPORTANT]  
@@ -120,4 +134,3 @@ Here's a screenshot of the data we collect with `hachyboop`. The `observedby` an
 ![image](https://github.com/user-attachments/assets/3e1a8ddf-7777-4336-8139-b233e53839c6)
 
   
-

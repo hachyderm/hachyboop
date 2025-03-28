@@ -8,9 +8,15 @@
 export HACHYBOOP_OBSERVER_ID=esk
 export HACHYBOOP_OBSERVER_REGION=exandria
 
-## DNS Configuration
+## Testing parameters
 
-### Resolvers and questions - what DNS entries are you poking, and who are you asking?
+### Frequency
+
+export HACHYBOOP_TEST_FREQUENCY_SECONDS=300
+
+### DNS Configuration
+
+#### Resolvers and questions - what DNS entries are you poking, and who are you asking?
 export HACHYBOOP_RESOLVERS=91.200.176.1:53,8.8.8.8:53
 export HACHYBOOP_QUESTIONS=hachyderm.io,hachyderm.wtf
 

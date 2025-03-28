@@ -90,6 +90,30 @@ var (
 			Required:    false,
 		},
 		{
+			Name:        "BUNNYNET_MC_REGION",
+			Destination: &cfg.RuntimeCloudProviderMetadata.BunnyRegion,
+			Value:       "",
+			Required:    false,
+		},
+		{
+			Name:        "BUNNYNET_MC_PODID",
+			Destination: &cfg.RuntimeCloudProviderMetadata.BunnyPodId,
+			Value:       "",
+			Required:    false,
+		},
+		{
+			Name:        "BUNNYNET_MC_APPID",
+			Destination: &cfg.RuntimeCloudProviderMetadata.BunnyAppId,
+			Value:       "",
+			Required:    false,
+		},
+		{
+			Name:        "BUNNYNET_MC_ZONE",
+			Destination: &cfg.RuntimeCloudProviderMetadata.BunnyZone,
+			Value:       "",
+			Required:    false,
+		},
+		{
 			Name:        "HACHYBOOP_QUESTIONS",
 			Value:       "hachyderm.io",
 			Destination: &cfg.QuestionsRaw,
@@ -99,6 +123,12 @@ var (
 			Name:        "HACHYBOOP_RESOLVERS",
 			Value:       "hachyderm.io",
 			Destination: &cfg.ResolversRaw,
+			Required:    false,
+		},
+		{
+			Name:        "HACHYBOOP_TEST_FREQUENCY_SECONDS",
+			Value:       "300",
+			Destination: &cfg.TestFrequencySecondsRaw,
 			Required:    false,
 		},
 	}
@@ -113,12 +143,16 @@ type EnvironmentVariable struct {
 
 func Environment() error {
 	for _, v := range registry {
-		v.Value = os.Getenv(v.Name)
-		if v.Required && v.Value == "" {
+		readValue := os.Getenv(v.Name)
+		if v.Required && readValue == "" {
 			// If required and the variable is empty
 			return fmt.Errorf("empty or undefined environmental variable [%s]", v.Name)
 		}
-		*v.Destination = v.Value
+
+		if readValue != "" {
+			v.Value = readValue // we don't use v.Value but why not
+			*v.Destination = readValue
+		}
 	}
 	return nil
 }
