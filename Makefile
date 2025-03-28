@@ -65,6 +65,7 @@ runcontainer: container
 		-e BUNNYNET_MC_ZONE \
 		-e BUNNYNET_MC_APPID \
 		-e BUNNYNET_MC_PODID \
+		-e HACHYBOOP_TEST_FREQUENCY_SECONDS \
 		--mount type=bind,src=data/,dst=/data \
 	 	$(target):latest
 
