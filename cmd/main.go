@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 
@@ -74,6 +75,13 @@ A longer sentence, about how exactly to use this program`,
 			cfg.Questions = strings.Split(cfg.QuestionsRaw, ",")
 			cfg.Resolvers = strings.Split(cfg.ResolversRaw, ",")
 			cfg.ObservationHandler = make(chan *service.HachyboopDnsObservation, 32)
+
+			// TODO make this dynamic and less hardcoded
+			if cfg.RuntimeCloudProviderMetadata.BunnyPodId != "" {
+				logrus.Info("Cloud provider: Bunny Magic Container Runtime detected")
+				cfg.ObservationRegion = fmt.Sprintf("%s/%s", cfg.RuntimeCloudProviderMetadata.BunnyRegion, cfg.RuntimeCloudProviderMetadata.BunnyZone)
+				cfg.ObserverId = fmt.Sprintf("%s/%s", cfg.RuntimeCloudProviderMetadata.BunnyAppId, cfg.RuntimeCloudProviderMetadata.BunnyPodId)
+			}
 
 			// TODO validate at least one question & one resolver
 

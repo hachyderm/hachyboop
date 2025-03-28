@@ -90,6 +90,30 @@ var (
 			Required:    false,
 		},
 		{
+			Name:        "BUNNYNET_MC_REGION",
+			Destination: &cfg.RuntimeCloudProviderMetadata.BunnyRegion,
+			Value:       "",
+			Required:    false,
+		},
+		{
+			Name:        "BUNNYNET_MC_PODID",
+			Destination: &cfg.RuntimeCloudProviderMetadata.BunnyPodId,
+			Value:       "",
+			Required:    false,
+		},
+		{
+			Name:        "BUNNYNET_MC_APPID",
+			Destination: &cfg.RuntimeCloudProviderMetadata.BunnyAppId,
+			Value:       "",
+			Required:    false,
+		},
+		{
+			Name:        "BUNNYNET_MC_ZONE",
+			Destination: &cfg.RuntimeCloudProviderMetadata.BunnyZone,
+			Value:       "",
+			Required:    false,
+		},
+		{
 			Name:        "HACHYBOOP_QUESTIONS",
 			Value:       "hachyderm.io",
 			Destination: &cfg.QuestionsRaw,
