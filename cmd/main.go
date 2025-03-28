@@ -84,7 +84,7 @@ A longer sentence, about how exactly to use this program`,
 				cfg.ObserverId = fmt.Sprintf("%s/%s", cfg.RuntimeCloudProviderMetadata.BunnyAppId, cfg.RuntimeCloudProviderMetadata.BunnyPodId)
 			}
 
-			logrus.WithField("observer", cfg.ObservationRegion).WithField("region", cfg.ObservationRegion).Debug("Set region and observer")
+			logrus.WithField("observer", cfg.ObserverId).WithField("region", cfg.ObservationRegion).Debug("Set region and observer")
 
 			// TODO validate at least one question & one resolver
 

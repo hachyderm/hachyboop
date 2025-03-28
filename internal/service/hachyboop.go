@@ -89,6 +89,10 @@ type RuntimeCloudProviderMetadata struct {
 
 // True if we should output to S3.
 func (s *S3Options) Enabled() bool {
+	if s.EnabledRaw == "" {
+		return false
+	}
+
 	res, err := strconv.ParseBool(s.EnabledRaw)
 
 	if err != nil {
@@ -100,6 +104,10 @@ func (s *S3Options) Enabled() bool {
 
 // True if we should output to a local file.
 func (f *FileOptions) Enabled() bool {
+	if f.EnabledRaw == "" {
+		return false
+	}
+
 	res, err := strconv.ParseBool(f.EnabledRaw)
 
 	if err != nil {
